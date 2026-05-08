@@ -1,0 +1,144 @@
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Trash2, ArrowLeft } from 'lucide-react';
+import { RootState } from '../../redux/store';
+
+const CartPage = () => {
+  const navigate = useNavigate();
+  const { items } = useSelector((state: RootState) => state.cart);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  const subtotal = items.reduce((sum, item) => {
+    return sum + (item.Product?.price || 0) * item.quantity;
+  }, 0);
+
+  const tax = subtotal * 0.1;
+  const total = subtotal + tax;
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
+        <div className="container-custom text-center">
+          <p className="text-slate-600 dark:text-slate-400 mb-4">Please login to view your cart</p>
+          <Link to="/auth/login" className="btn-primary">
+            Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
+      <div className="container-custom">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 mb-8 font-medium"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back
+        </button>
+
+        <h1 className="font-serif text-4xl font-bold mb-8">Shopping Cart</h1>
+
+        {items.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-slate-600 dark:text-slate-400 text-lg mb-4">Your cart is empty</p>
+            <Link to="/shop" className="btn-primary">
+              Continue Shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2">
+              <div className="card">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex gap-4 p-6 border-b border-slate-200 dark:border-slate-800 last:border-b-0"
+                  >
+                    <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      {item.Product?.imageUrl ? (
+                        <img
+                          src={item.Product.imageUrl}
+                          alt={item.Product.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="text-2xl">👟</div>
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <a href={`/product/${item.productId}`} className="font-semibold hover:text-amber-500">
+                        {item.Product?.name}
+                      </a>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                        {item.Product?.brand}
+                      </p>
+                      <p className="text-lg font-bold text-amber-500">
+                        ${(item.Product?.price || 0).toFixed(2)}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-4">
+                      <div className="flex items-center gap-2">
+                        <button className="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded hover:bg-slate-300">
+                          −
+                        </button>
+                        <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                        <button className="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded hover:bg-slate-300">
+                          +
+                        </button>
+                      </div>
+                      <button className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <div className="card p-6 sticky top-24">
+                <h2 className="font-semibold text-lg mb-6">Order Summary</h2>
+
+                <div className="space-y-4 mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Subtotal</span>
+                    <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Tax (10%)</span>
+                    <span className="font-semibold">${tax.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between mb-6">
+                  <span className="font-semibold text-lg">Total</span>
+                  <span className="text-2xl font-bold text-amber-500">${total.toFixed(2)}</span>
+                </div>
+
+                <Link to="/checkout" className="block w-full px-6 py-3 btn-primary text-center">
+                  Proceed to Checkout
+                </Link>
+
+                <Link
+                  to="/shop"
+                  className="block w-full mt-3 px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-50 rounded-lg font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors text-center"
+                >
+                  Continue Shopping
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CartPage;
