@@ -32,8 +32,6 @@ export const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Support</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link to="/shipping" className="hover:text-accent-400 transition-colors">Shipping Info</Link></li>
-              <li><Link to="/returns" className="hover:text-accent-400 transition-colors">Returns</Link></li>
               <li><Link to="/privacy" className="hover:text-accent-400 transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-accent-400 transition-colors">Terms & Conditions</Link></li>
             </ul>
@@ -63,7 +61,7 @@ export const Footer = () => {
         <div className="border-t border-slate-800 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <p className="text-slate-400 text-sm">
-              &copy; 2024 ShoeStore. All rights reserved.
+              &copy; 2026 ShoeStore. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a href="#" className="text-slate-400 hover:text-accent-400 transition-colors">Facebook</a>
