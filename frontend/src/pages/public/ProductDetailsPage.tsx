@@ -1,19 +1,62 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 import { productService } from '../../api/product.service';
+import { cartService } from '../../api/cart.service';
+import { addToWishlist, removeFromWishlist } from '../../redux/slices/wishlistSlice';
+import { addItem } from '../../redux/slices/cartSlice';
+import { RootState } from '../../redux/store';
+import { toast } from 'sonner';
 
 const ProductDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [quantity, setQuantity] = useState(1);
+  const wishlistIds = useSelector((state: RootState) => state.wishlist.productIds);
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const isInWishlist = wishlistIds.includes(parseInt(id!));
+  const isInCart = cartItems.some(item => item.productId === parseInt(id!));
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', id],
     queryFn: () => productService.getProductById(parseInt(id!)),
     enabled: !!id,
   });
+
+  const addToCartMutation = useMutation({
+    mutationFn: () =>
+      cartService.addToCart({
+        productId: product!.id,
+        quantity,
+      }),
+    onSuccess: (item) => {
+      dispatch(addItem(item));
+      toast.success('Added to cart!');
+      setQuantity(1);
+    },
+    onError: () => {
+      toast.error('Failed to add to cart');
+    },
+  });
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCartMutation.mutate();
+  };
+
+  const handleWishlist = () => {
+    if (!product) return;
+    if (isInWishlist) {
+      dispatch(removeFromWishlist(product.id));
+      toast.success('Removed from wishlist');
+    } else {
+      dispatch(addToWishlist(product.id));
+      toast.success('Added to wishlist');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -103,11 +146,22 @@ const ProductDetailsPage = () => {
             )}
 
             <div className="flex gap-4">
-              <button className="flex-1 btn-primary">
-                Add to Cart
+              <button
+                onClick={handleAddToCart}
+                disabled={addToCartMutation.isPending || product.stock === 0}
+                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {addToCartMutation.isPending ? 'Adding...' : isInCart ? '✓ In Cart' : 'Add to Cart'}
               </button>
-              <button className="px-6 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800">
-                ❤️ Wishlist
+              <button
+                onClick={handleWishlist}
+                className={`px-6 py-2.5 border rounded-lg font-medium transition-colors ${
+                  isInWishlist
+                    ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-600 text-red-600 dark:text-red-400'
+                    : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'
+                }`}
+              >
+                {isInWishlist ? '❤️ In Wishlist' : '🤍 Wishlist'}
               </button>
             </div>
 

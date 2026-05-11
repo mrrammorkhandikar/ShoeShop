@@ -50,10 +50,10 @@ export const Navbar = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            {/* Theme Toggle */}
+            {/* Theme Toggle - Desktop Only */}
             <button
               onClick={handleThemeToggle}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="hidden md:flex p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               aria-label="Toggle theme"
             >
               {mode === 'light' ? (
@@ -63,10 +63,10 @@ export const Navbar = () => {
               )}
             </button>
 
-            {/* Wishlist */}
+            {/* Wishlist - Desktop Only */}
             <Link
               to="/wishlist"
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative"
+              className="hidden md:flex p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative"
             >
               <Heart className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             </Link>
@@ -87,7 +87,12 @@ export const Navbar = () => {
             {/* Auth */}
             {isAuthenticated ? (
               <div className="hidden md:flex items-center gap-2">
-                <span className="text-sm text-slate-600 dark:text-slate-300">{user?.name}</span>
+                <Link
+                  to="/dashboard"
+                  className="text-sm text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
+                >
+                  {user?.name}
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -122,23 +127,7 @@ export const Navbar = () => {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden pb-4 border-t border-slate-200 dark:border-slate-800">
-            <Link
-              to="/shop"
-              className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              Shop
-            </Link>
-            {isAuthenticated && user?.role === 'Admin' && (
-              <Link
-                to="/admin/dashboard"
-                className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                Admin
-              </Link>
-            )}
+          <div className="md:hidden absolute top-16 left-0 right-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 pb-4 z-40">
             {isAuthenticated ? (
               <>
                 <Link
@@ -148,6 +137,40 @@ export const Navbar = () => {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  to="/shop"
+                  className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Shop
+                </Link>
+                <Link
+                  to="/wishlist"
+                  className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Wishlist
+                </Link>
+                {user?.role === 'Admin' && (
+                  <Link
+                    to="/admin/dashboard"
+                    className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    handleThemeToggle();
+                  }}
+                  className="w-full text-left px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium flex items-center justify-between"
+                >
+                  {mode === 'light' ? 'Light' : 'Dark'}
+                  <div className={`w-10 h-6 rounded-full transition-colors flex items-center ${mode === 'light' ? 'bg-slate-300' : 'bg-accent-500'}`}>
+                    <div className={`w-5 h-5 rounded-full bg-white transition-transform ${mode === 'light' ? 'translate-x-0.5' : 'translate-x-4'}`} />
+                  </div>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="w-full text-left px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
@@ -156,13 +179,40 @@ export const Navbar = () => {
                 </button>
               </>
             ) : (
-              <Link
-                to="/auth/login"
-                className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                Login
-              </Link>
+              <>
+                <Link
+                  to="/shop"
+                  className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Shop
+                </Link>
+                <Link
+                  to="/wishlist"
+                  className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Wishlist
+                </Link>
+                <button
+                  onClick={() => {
+                    handleThemeToggle();
+                  }}
+                  className="w-full text-left px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium flex items-center justify-between"
+                >
+                  {mode === 'light' ? 'Light' : 'Dark'}
+                  <div className={`w-10 h-6 rounded-full transition-colors flex items-center ${mode === 'light' ? 'bg-slate-300' : 'bg-accent-500'}`}>
+                    <div className={`w-5 h-5 rounded-full bg-white transition-transform ${mode === 'light' ? 'translate-x-0.5' : 'translate-x-4'}`} />
+                  </div>
+                </button>
+                <Link
+                  to="/auth/login"
+                  className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary-900 dark:hover:text-accent-400 font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Login
+                </Link>
+              </>
             )}
           </div>
         )}

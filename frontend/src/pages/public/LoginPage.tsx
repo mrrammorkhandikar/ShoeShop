@@ -92,20 +92,6 @@ const LoginPage = () => {
               </Link>
             </p>
           </div>
-
-          {/* Admin Login Info */}
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm">
-            <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Are you an admin?</p>
-            <p className="text-blue-800 dark:text-blue-200 mb-3">
-              Use the admin login page instead
-            </p>
-            <button
-              onClick={() => navigate('/admin')}
-              className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium text-sm"
-            >
-              Go to Admin Login
-            </button>
-          </div>
         </div>
       </div>
     </div>

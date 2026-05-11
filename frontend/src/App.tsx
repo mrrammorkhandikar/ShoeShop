@@ -7,6 +7,8 @@ import { Footer } from './components/layout/Footer';
 import { routes } from './routes';
 import { RootState, AppDispatch } from './redux/store';
 import { setTheme } from './redux/slices/themeSlice';
+import { setCart } from './redux/slices/cartSlice';
+import { cartService } from './api/cart.service';
 
 function AppContent() {
   const location = useLocation();
@@ -30,12 +32,26 @@ function AppContent() {
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const { mode } = useSelector((state: RootState) => state.theme);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     // Initialize theme from localStorage
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' || 'light';
     dispatch(setTheme(savedTheme));
   }, [dispatch]);
+
+  useEffect(() => {
+    // Load cart when user is authenticated
+    if (isAuthenticated) {
+      cartService.getCart()
+        .then((cart) => {
+          dispatch(setCart(cart));
+        })
+        .catch((error) => {
+          console.error('Failed to load cart:', error);
+        });
+    }
+  }, [isAuthenticated, dispatch]);
 
   return (
     <Router>

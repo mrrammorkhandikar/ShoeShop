@@ -1,16 +1,47 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit2, Trash2 } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { AddCategoryModal } from '../../components/admin/AddCategoryModal';
 import { categoryService } from '../../api/category.service';
+import { toast } from 'sonner';
 
 const AdminCategoriesPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const queryClient = useQueryClient();
+  
   const { data: categories, isLoading } = useQuery({
     queryKey: ['admin-categories'],
     queryFn: () => categoryService.getCategories(),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (categoryId: number) => categoryService.deleteCategory(categoryId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      toast.success('Category deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete category');
+    },
+  });
+
+  const handleEdit = (category: any) => {
+    setEditingCategory(category);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (categoryId: number) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+      deleteMutation.mutate(categoryId);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingCategory(null);
+  };
 
   const content = (
     <div>
@@ -32,20 +63,19 @@ const AdminCategoriesPage = () => {
                 <th className="text-left py-3 px-4 font-semibold">Name</th>
                 <th className="text-left py-3 px-4 font-semibold">Description</th>
                 <th className="text-left py-3 px-4 font-semibold">Products</th>
-                <th className="text-left py-3 px-4 font-semibold">Created</th>
                 <th className="text-left py-3 px-4 font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-600 dark:text-slate-400">
+                  <td colSpan={4} className="py-8 text-center text-slate-600 dark:text-slate-400">
                     Loading...
                   </td>
                 </tr>
               ) : categories?.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-600 dark:text-slate-400">
+                  <td colSpan={4} className="py-8 text-center text-slate-600 dark:text-slate-400">
                     No categories found
                   </td>
                 </tr>
@@ -61,16 +91,22 @@ const AdminCategoriesPage = () => {
                     </td>
                     <td className="py-3 px-4">
                       <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800">
-                        -
+                        {category.productCount || 0}
                       </span>
                     </td>
-                    <td className="py-3 px-4">-</td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
+                        <button 
+                          onClick={() => handleEdit(category)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                        >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                        <button 
+                          onClick={() => handleDelete(category.id)}
+                          disabled={deleteMutation.isPending}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -83,7 +119,11 @@ const AdminCategoriesPage = () => {
         </div>
       </div>
 
-      <AddCategoryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddCategoryModal 
+        isOpen={isModalOpen} 
+        onClose={handleCloseModal}
+        editingCategory={editingCategory}
+      />
     </div>
   );
 

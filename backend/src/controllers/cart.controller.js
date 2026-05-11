@@ -33,7 +33,13 @@ export const addToCart = async (req, res) => {
     item.quantity += quantity;
     await item.save();
   }
-  successResponse(res, "Product added to cart", { item });
+  
+  // Include Product data in response
+  const itemWithProduct = await CartItem.findByPk(item.id, {
+    include: [{ model: Product }]
+  });
+  
+  successResponse(res, "Product added to cart", { item: itemWithProduct });
 };
 
 export const updateCartItem = async (req, res) => {
@@ -47,7 +53,13 @@ export const updateCartItem = async (req, res) => {
   }
   item.quantity = quantity;
   await item.save();
-  successResponse(res, "Cart item updated", { item });
+  
+  // Include Product data in response
+  const itemWithProduct = await CartItem.findByPk(item.id, {
+    include: [{ model: Product }]
+  });
+  
+  successResponse(res, "Cart item updated", { item: itemWithProduct });
 };
 
 export const removeCartItem = async (req, res) => {

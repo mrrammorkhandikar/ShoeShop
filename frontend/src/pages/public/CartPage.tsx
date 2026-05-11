@@ -1,15 +1,70 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Trash2, ArrowLeft } from 'lucide-react';
+import { useEffect } from 'react';
 import { RootState } from '../../redux/store';
+import { cartService } from '../../api/cart.service';
+import { updateItem, removeItem, setCart } from '../../redux/slices/cartSlice';
+import { toast } from 'sonner';
 
 const CartPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { items } = useSelector((state: RootState) => state.cart);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
+  // Fetch cart if items are empty
+  useEffect(() => {
+    if (isAuthenticated && items.length === 0) {
+      cartService.getCart()
+        .then((cart) => {
+          dispatch(setCart(cart));
+        })
+        .catch((error) => {
+          console.error('Failed to load cart:', error);
+        });
+    }
+  }, [isAuthenticated, dispatch, items.length]);
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: { productId: number; quantity: number }) =>
+      cartService.updateCartItem(payload),
+    onSuccess: (item) => {
+      dispatch(updateItem({ productId: item.productId, quantity: item.quantity }));
+      toast.success('Cart updated!');
+    },
+    onError: () => {
+      toast.error('Failed to update cart');
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (productId: number) =>
+      cartService.removeCartItem({ productId }),
+    onSuccess: (_, productId) => {
+      dispatch(removeItem(productId));
+      toast.success('Item removed from cart');
+    },
+    onError: () => {
+      toast.error('Failed to remove item');
+    },
+  });
+
+  const handleQuantityChange = (productId: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    updateMutation.mutate({ productId, quantity: newQuantity });
+  };
+
+  const handleRemoveItem = (productId: number) => {
+    removeMutation.mutate(productId);
+  };
+
   const subtotal = items.reduce((sum, item) => {
-    return sum + (item.Product?.price || 0) * item.quantity;
+    const price = typeof item.Product?.price === 'string' 
+      ? parseFloat(item.Product.price) 
+      : (item.Product?.price || 0);
+    return sum + price * item.quantity;
   }, 0);
 
   const tax = subtotal * 0.1;
@@ -78,21 +133,33 @@ const CartPage = () => {
                         {item.Product?.brand}
                       </p>
                       <p className="text-lg font-bold text-amber-500">
-                        ${(item.Product?.price || 0).toFixed(2)}
+                        ${(typeof item.Product?.price === 'string' ? parseFloat(item.Product.price) : (item.Product?.price || 0)).toFixed(2)}
                       </p>
                     </div>
 
                     <div className="flex flex-col items-end gap-4">
                       <div className="flex items-center gap-2">
-                        <button className="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded hover:bg-slate-300">
+                        <button
+                          onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
+                          disabled={updateMutation.isPending}
+                          className="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded hover:bg-slate-300 disabled:opacity-50"
+                        >
                           −
                         </button>
                         <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                        <button className="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded hover:bg-slate-300">
+                        <button
+                          onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
+                          disabled={updateMutation.isPending}
+                          className="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded hover:bg-slate-300 disabled:opacity-50"
+                        >
                           +
                         </button>
                       </div>
-                      <button className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                      <button
+                        onClick={() => handleRemoveItem(item.productId)}
+                        disabled={removeMutation.isPending}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50"
+                      >
                         <Trash2 className="w-5 h-5" />
                       </button>
                     </div>

@@ -1,9 +1,25 @@
-import { Category } from "../models/index.js";
+import { Category, Product } from "../models/index.js";
 import { successResponse } from "../utils/apiResponse.js";
 
 export const getCategories = async (req, res) => {
-  const categories = await Category.findAll({ order: [["id", "DESC"]] });
-  successResponse(res, "Categories fetched", { categories });
+  const categories = await Category.findAll({ 
+    order: [["id", "DESC"]]
+  });
+  
+  // Get product count for each category
+  const categoriesWithCount = await Promise.all(
+    categories.map(async (category) => {
+      const productCount = await Product.count({
+        where: { categoryId: category.id }
+      });
+      return {
+        ...category.toJSON(),
+        productCount
+      };
+    })
+  );
+  
+  successResponse(res, "Categories fetched", { categories: categoriesWithCount });
 };
 
 export const createCategory = async (req, res) => {

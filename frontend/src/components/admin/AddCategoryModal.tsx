@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoryService } from '../../api/category.service';
@@ -6,15 +6,30 @@ import { categoryService } from '../../api/category.service';
 interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  editingCategory?: any;
 }
 
-export const AddCategoryModal = ({ isOpen, onClose }: AddCategoryModalProps) => {
+export const AddCategoryModal = ({ isOpen, onClose, editingCategory }: AddCategoryModalProps) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (editingCategory) {
+      setFormData({
+        name: editingCategory.name,
+        description: editingCategory.description || '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+      });
+    }
+  }, [editingCategory, isOpen]);
 
   const addCategoryMutation = useMutation({
     mutationFn: () =>
@@ -36,6 +51,26 @@ export const AddCategoryModal = ({ isOpen, onClose }: AddCategoryModalProps) => 
     },
   });
 
+  const updateCategoryMutation = useMutation({
+    mutationFn: () =>
+      categoryService.updateCategory(editingCategory.id, {
+        name: formData.name,
+        description: formData.description,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      setFormData({
+        name: '',
+        description: '',
+      });
+      setError('');
+      onClose();
+    },
+    onError: () => {
+      setError('Failed to update category');
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) {
@@ -43,17 +78,26 @@ export const AddCategoryModal = ({ isOpen, onClose }: AddCategoryModalProps) => 
       return;
     }
     setError('');
-    addCategoryMutation.mutate();
+    if (editingCategory) {
+      updateCategoryMutation.mutate();
+    } else {
+      addCategoryMutation.mutate();
+    }
   };
 
   if (!isOpen) return null;
+
+  const isLoading = addCategoryMutation.isPending || updateCategoryMutation.isPending;
+  const buttonText = editingCategory 
+    ? (updateCategoryMutation.isPending ? 'Updating...' : 'Update Category')
+    : (addCategoryMutation.isPending ? 'Adding...' : 'Add Category');
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-xl font-bold">Add Category</h2>
+          <h2 className="text-xl font-bold">{editingCategory ? 'Edit Category' : 'Add Category'}</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
@@ -102,10 +146,10 @@ export const AddCategoryModal = ({ isOpen, onClose }: AddCategoryModalProps) => 
             </button>
             <button
               type="submit"
-              disabled={addCategoryMutation.isPending}
+              disabled={isLoading}
               className="flex-1 px-4 py-2 btn-primary disabled:opacity-50"
             >
-              {addCategoryMutation.isPending ? 'Adding...' : 'Add Category'}
+              {buttonText}
             </button>
           </div>
         </form>

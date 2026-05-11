@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { productService } from '../../api/product.service';
@@ -7,9 +7,10 @@ import { categoryService } from '../../api/category.service';
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
+  editingProduct?: any;
 }
 
-export const AddProductModal = ({ isOpen, onClose }: AddProductModalProps) => {
+export const AddProductModal = ({ isOpen, onClose, editingProduct }: AddProductModalProps) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: '',
@@ -21,6 +22,30 @@ export const AddProductModal = ({ isOpen, onClose }: AddProductModalProps) => {
     imageUrl: '',
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (editingProduct) {
+      setFormData({
+        name: editingProduct.name,
+        description: editingProduct.description || '',
+        price: editingProduct.price.toString(),
+        brand: editingProduct.brand || '',
+        categoryId: editingProduct.categoryId.toString(),
+        stock: editingProduct.stock.toString(),
+        imageUrl: editingProduct.imageUrl || '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        brand: '',
+        categoryId: '',
+        stock: '',
+        imageUrl: '',
+      });
+    }
+  }, [editingProduct, isOpen]);
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
@@ -44,6 +69,7 @@ export const AddProductModal = ({ isOpen, onClose }: AddProductModalProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
       setFormData({
         name: '',
         description: '',
@@ -61,6 +87,40 @@ export const AddProductModal = ({ isOpen, onClose }: AddProductModalProps) => {
     },
   });
 
+  const updateProductMutation = useMutation({
+    mutationFn: () => {
+      const fd = new FormData();
+      fd.append('name', formData.name);
+      fd.append('description', formData.description);
+      fd.append('price', formData.price);
+      fd.append('brand', formData.brand);
+      fd.append('categoryId', formData.categoryId);
+      fd.append('stock', formData.stock);
+      if (formData.imageUrl) {
+        fd.append('imageUrl', formData.imageUrl);
+      }
+      return productService.updateProduct(editingProduct.id, fd);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        brand: '',
+        categoryId: '',
+        stock: '',
+        imageUrl: '',
+      });
+      setError('');
+      onClose();
+    },
+    onError: () => {
+      setError('Failed to update product');
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.price || !formData.categoryId || !formData.stock) {
@@ -68,16 +128,25 @@ export const AddProductModal = ({ isOpen, onClose }: AddProductModalProps) => {
       return;
     }
     setError('');
-    addProductMutation.mutate();
+    if (editingProduct) {
+      updateProductMutation.mutate();
+    } else {
+      addProductMutation.mutate();
+    }
   };
 
   if (!isOpen) return null;
+
+  const isLoading = addProductMutation.isPending || updateProductMutation.isPending;
+  const buttonText = editingProduct 
+    ? (updateProductMutation.isPending ? 'Updating...' : 'Update Product')
+    : (addProductMutation.isPending ? 'Adding...' : 'Add Product');
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-xl font-bold">Add Product</h2>
+          <h2 className="text-xl font-bold">{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
@@ -188,10 +257,10 @@ export const AddProductModal = ({ isOpen, onClose }: AddProductModalProps) => {
             </button>
             <button
               type="submit"
-              disabled={addProductMutation.isPending}
+              disabled={isLoading}
               className="flex-1 px-4 py-2 btn-primary disabled:opacity-50"
             >
-              {addProductMutation.isPending ? 'Adding...' : 'Add Product'}
+              {buttonText}
             </button>
           </div>
         </form>

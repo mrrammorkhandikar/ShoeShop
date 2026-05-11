@@ -1,16 +1,48 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit2, Trash2 } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { AddProductModal } from '../../components/admin/AddProductModal';
 import { productService } from '../../api/product.service';
+import { toast } from 'sonner';
 
 const AdminProductsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const queryClient = useQueryClient();
+  
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['admin-products'],
     queryFn: () => productService.getProducts({ limit: 100 }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (productId: number) => productService.deleteProduct(productId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      toast.success('Product deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete product');
+    },
+  });
+
+  const handleEdit = (product: any) => {
+    setEditingProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (productId: number) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+      deleteMutation.mutate(productId);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingProduct(null);
+  };
 
   const content = (
     <div>
@@ -63,10 +95,17 @@ const AdminProductsPage = () => {
                     <td className="py-3 px-4">{product.stock}</td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
+                        <button 
+                          onClick={() => handleEdit(product)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                        >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                        <button 
+                          onClick={() => handleDelete(product.id)}
+                          disabled={deleteMutation.isPending}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -79,7 +118,11 @@ const AdminProductsPage = () => {
         </div>
       </div>
 
-      <AddProductModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddProductModal 
+        isOpen={isModalOpen} 
+        onClose={handleCloseModal}
+        editingProduct={editingProduct}
+      />
     </div>
   );
 
