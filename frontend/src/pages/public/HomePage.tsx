@@ -3,6 +3,7 @@ import { ArrowRight, Star, Truck, Shield, RotateCcw, Zap, TrendingUp, Award } fr
 import { useQuery } from '@tanstack/react-query';
 import { productService } from '../../api/product.service';
 import { categoryService } from '../../api/category.service';
+import { formatPrice } from '../../utils/currency';
 
 const HomePage = () => {
   const { data: productsData, isLoading: productsLoading } = useQuery({
@@ -90,7 +91,7 @@ const HomePage = () => {
               </div>
               <div>
                 <p className="font-semibold text-sm">Free Shipping</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">On orders over $50</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">On orders over ₹2500</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -238,7 +239,7 @@ const HomePage = () => {
                     
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
-                        ${typeof product.price === 'string' ? parseFloat(product.price).toFixed(2) : product.price.toFixed(2)}
+                        {formatPrice(product.price)}
                       </span>
                       <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg">
                         <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
@@ -362,52 +363,6 @@ const HomePage = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-      {/* CTA Section */}
-      <section className="py-20 md:py-28">
-        <div className="container-custom">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left CTA */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 to-blue-800 p-12 text-white flex flex-col justify-center">
-              <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-              <div className="relative z-10">
-                <h3 className="font-serif text-3xl md:text-4xl font-bold mb-4">
-                  New Arrivals
-                </h3>
-                <p className="text-blue-100 mb-6">
-                  Check out our latest collection of premium shoes just added to our store.
-                </p>
-                <Link
-                  to="/shop?sort=newest"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-300"
-                >
-                  Explore New
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-            
-            {/* Right CTA */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 to-purple-800 p-12 text-white flex flex-col justify-center">
-              <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-              <div className="relative z-10">
-                <h3 className="font-serif text-3xl md:text-4xl font-bold mb-4">
-                  Special Deals
-                </h3>
-                <p className="text-purple-100 mb-6">
-                  Don't miss out on our exclusive discounts and limited-time offers.
-                </p>
-                <Link
-                  to="/shop?filter=sale"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-300"
-                >
-                  View Deals
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </section>

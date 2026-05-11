@@ -4,6 +4,7 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { orderService } from '../../api/order.service';
 import { userService } from '../../api/user.service';
 import { productService } from '../../api/product.service';
+import { formatPrice } from '../../utils/currency';
 
 const AdminDashboardPage = () => {
   const { data: orders } = useQuery({
@@ -29,7 +30,7 @@ const AdminDashboardPage = () => {
   const stats = [
     {
       label: 'Total Revenue',
-      value: `$${totalRevenue.toFixed(2)}`,
+      value: formatPrice(totalRevenue),
       icon: BarChart3,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100 dark:bg-blue-900',
@@ -103,7 +104,7 @@ const AdminDashboardPage = () => {
                   <td className="py-3 px-4">#{order.id}</td>
                   <td className="py-3 px-4">{order.User?.name}</td>
                   <td className="py-3 px-4 font-semibold text-amber-500">
-                    ${order.totalPrice.toFixed(2)}
+                    {formatPrice(order.totalPrice)}
                   </td>
                   <td className="py-3 px-4">
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${

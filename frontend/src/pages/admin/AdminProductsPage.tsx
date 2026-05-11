@@ -5,6 +5,7 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { AddProductModal } from '../../components/admin/AddProductModal';
 import { productService } from '../../api/product.service';
 import { toast } from 'sonner';
+import { formatPrice } from '../../utils/currency';
 
 const AdminProductsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -90,7 +91,7 @@ const AdminProductsPage = () => {
                     <td className="py-3 px-4">{product.name}</td>
                     <td className="py-3 px-4">{product.brand}</td>
                     <td className="py-3 px-4 font-semibold text-amber-500">
-                      ${typeof product.price === 'string' ? parseFloat(product.price).toFixed(2) : product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </td>
                     <td className="py-3 px-4">{product.stock}</td>
                     <td className="py-3 px-4">

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Eye, Trash2 } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { orderService } from '../../api/order.service';
+import { formatPrice } from '../../utils/currency';
 
 const AdminOrdersPage = () => {
   const { data: orders, isLoading } = useQuery({
@@ -67,7 +68,7 @@ const AdminOrdersPage = () => {
                     <td className="py-3 px-4 font-semibold">#{order.id}</td>
                     <td className="py-3 px-4">{order.User?.name || 'N/A'}</td>
                     <td className="py-3 px-4 font-semibold text-amber-500">
-                      ${order.totalPrice.toFixed(2)}
+                      {formatPrice(order.totalPrice)}
                     </td>
                     <td className="py-3 px-4">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { productService } from '../../api/product.service';
 import { categoryService } from '../../api/category.service';
 import { Filter, X } from 'lucide-react';
+import { formatPrice } from '../../utils/currency';
 
 const ShopPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -146,7 +147,7 @@ const ShopPage = () => {
                         <h3 className="font-semibold text-sm mb-2 line-clamp-2">{product.name}</h3>
                         <div className="flex items-center justify-between">
                           <span className="text-lg font-bold text-amber-500">
-                            ${typeof product.price === 'string' ? parseFloat(product.price).toFixed(2) : product.price.toFixed(2)}
+                            {formatPrice(product.price)}
                           </span>
                           <span className="text-xs text-slate-600">⭐ {product.popularity}</span>
                         </div>

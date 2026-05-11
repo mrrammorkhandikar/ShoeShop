@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
 import { RootState } from '../../redux/store';
+import { formatPrice } from '../../utils/currency';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -103,7 +104,7 @@ const CheckoutPage = () => {
                       {item.Product?.name} x {item.quantity}
                     </span>
                     <span className="font-semibold">
-                      ${((item.Product?.price || 0) * item.quantity).toFixed(2)}
+                      {formatPrice((item.Product?.price || 0) * item.quantity)}
                     </span>
                   </div>
                 ))}
@@ -112,11 +113,11 @@ const CheckoutPage = () => {
               <div className="space-y-4 mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Subtotal</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Tax (10%)</span>
-                  <span className="font-semibold">${tax.toFixed(2)}</span>
+                  <span className="font-semibold">{formatPrice(tax)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Shipping</span>
@@ -126,7 +127,7 @@ const CheckoutPage = () => {
 
               <div className="flex justify-between mb-6">
                 <span className="font-semibold text-lg">Total</span>
-                <span className="text-2xl font-bold text-amber-500">${total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-amber-500">{formatPrice(total)}</span>
               </div>
 
               <button className="w-full px-6 py-3 btn-primary">

@@ -7,6 +7,7 @@ import { RootState } from '../../redux/store';
 import { cartService } from '../../api/cart.service';
 import { updateItem, removeItem, setCart } from '../../redux/slices/cartSlice';
 import { toast } from 'sonner';
+import { formatPrice } from '../../utils/currency';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -133,7 +134,7 @@ const CartPage = () => {
                         {item.Product?.brand}
                       </p>
                       <p className="text-lg font-bold text-amber-500">
-                        ${(typeof item.Product?.price === 'string' ? parseFloat(item.Product.price) : (item.Product?.price || 0)).toFixed(2)}
+                        {formatPrice(item.Product?.price || 0)}
                       </p>
                     </div>
 
@@ -176,17 +177,17 @@ const CartPage = () => {
                 <div className="space-y-4 mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Subtotal</span>
-                    <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                    <span className="font-semibold">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Tax (10%)</span>
-                    <span className="font-semibold">${tax.toFixed(2)}</span>
+                    <span className="font-semibold">{formatPrice(tax)}</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between mb-6">
                   <span className="font-semibold text-lg">Total</span>
-                  <span className="text-2xl font-bold text-amber-500">${total.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-amber-500">{formatPrice(total)}</span>
                 </div>
 
                 <Link to="/checkout" className="block w-full px-6 py-3 btn-primary text-center">

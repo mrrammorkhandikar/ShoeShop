@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { RootState } from '../../redux/store';
 import { orderService } from '../../api/order.service';
 import { Package, User } from 'lucide-react';
+import { formatPrice } from '../../utils/currency';
 
 const UserDashboardPage = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'orders'>('profile');
@@ -121,7 +122,7 @@ const UserDashboardPage = () => {
                               Total
                             </p>
                             <p className="font-semibold text-amber-500">
-                              ${order.totalPrice.toFixed(2)}
+                              {formatPrice(order.totalPrice)}
                             </p>
                           </div>
                           <div>

@@ -9,6 +9,7 @@ import { addToWishlist, removeFromWishlist } from '../../redux/slices/wishlistSl
 import { addItem } from '../../redux/slices/cartSlice';
 import { RootState } from '../../redux/store';
 import { toast } from 'sonner';
+import { formatPrice } from '../../utils/currency';
 
 const ProductDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -110,7 +111,7 @@ const ProductDetailsPage = () => {
 
             <div className="mb-6">
               <span className="text-4xl font-bold text-amber-500">
-                ${typeof product.price === 'string' ? parseFloat(product.price).toFixed(2) : product.price.toFixed(2)}
+                {formatPrice(product.price)}
               </span>
             </div>
 
